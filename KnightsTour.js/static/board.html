@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Knights Tour</title>
+    <link rel="stylesheet" href="board.css" />
+</head>
+<body oncontextmenu="return false;">
+    <script src="board.js"></script>
+    <script src="coordinate.js"></script>
+    <script src="knightCommand.js"></script>
+    <script src="knightCommandManager.js"></script>
+    <script src="knight.js"></script>
+    <script src="jquery-2.0.3.min.js"></script>
+    <script type="text/javascript">
+        var knight = new knight();
+        var board = new board(knight);
+
+        var knightCommandManager = new knightCommandManager();
+
+        function renderBoard() {
+            var gridElement = $('#grid');
+            gridElement.empty();
+            for (var i = 0; i < board.rows; i++) {
+                var row = $('<tr><\tr>');
+                for (var j = 0; j < board.columns; j++) {
+                    if (knight.currentPosition.x == i && knight.currentPosition.y == j)
+                        row.append($("<td class=" + "\"current\"" + "></td> "));
+                    else if (board.isLegalMove(new Coordinate(i, j)))
+                        row.append($("<td class=" + "\"posibleMove\"" + "></td> "));
+                    else if(board.hasSpaceBeenVisited(new Coordinate(i, j)))
+                        row.append($("<td class=" + "\"visited\"" + "></td> "));
+                    else if (i % 2 == 0 && j % 2 == 0)
+                        row.append($("<td class=" + "\"white\"" + "></td> "));
+                    else if (i % 2 == 0 && j % 2 > 0)
+                        row.append($("<td class=" + "\"black\"" + "></td> "));
+                    else if (i % 2 > 0 && j % 2 ==  0)
+                        row.append($("<td class=" + "\"black\"" + "></td> "));
+                    else if (i % 2 > 0 && j % 2 > 0)
+                        row.append($("<td class=" + "\"white\"" + "></td> "));
+                }
+
+                gridElement.append(row);
+            }
+        }
+
+        $(document).ready(renderBoard);
+
+
+        $(document).on('click', 'td', function (e) {
+            var colIndex = $(this).index();
+            var rowIndex = $(this).closest("tr").index();
+            var space = new Coordinate(rowIndex, colIndex);
+            if (board.isLegalMove(space)) {
+                var command = new knightCommand(knight, space);
+                knightCommandManager.execute(command);
+                renderBoard();
+            }
+        });
+
+        $(document).mousedown(function (e) {
+            if (e.button == 2) {
+                knightCommandManager.undo();
+                renderBoard();
+            }
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.which == 66) {
+                knightCommandManager.redo();
+                renderBoard();
+            }
+        });
+    </script>
+    <p id="score"></p>
+    <div>
+        <table id="grid"></table>
+    </div>
+</body>
+</html>
